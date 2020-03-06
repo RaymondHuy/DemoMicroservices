@@ -1,0 +1,7 @@
+version: '3'
+services:
+  web:
+    build: ./DemoMicroservices.ToDoList.CommandApi
+    image: demomicroservices_todolist_commandapi
+    ports:
+      - "5000:5000"

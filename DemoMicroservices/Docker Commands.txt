@@ -1,0 +1,24 @@
+
+---------------build image from docker file
+docker build
+
+---------------show all the images
+docker image ls --all
+
+---------------remove the image 
+docker image rm
+
+---------------show all the containers
+docker ps
+
+---------------
+docker-compose up -d
+
+---------------
+docker-compose down
+
+---------------delete all containers
+docker rm -vf $(docker ps -a -q)
+
+---------------delete all the images
+docker rmi -f $(docker images -a -q)
