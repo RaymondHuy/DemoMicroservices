@@ -1,0 +1,20 @@
+version: '3.4'
+
+services:
+  demomicroservices.todolist.commandapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "80"
+
+  demomicroservices.todolist.auditlogapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "80"
+
+  demomicroservices.todolist.searchapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "80"

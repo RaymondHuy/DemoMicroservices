@@ -13,7 +13,9 @@ namespace DemoMicroservices.ToDoList.Domain
             {
                 HostName = "localhost",
                 UserName = "guest",
-                Password = "guest"
+                Password = "guest",
+                Port = 5672,
+                RequestedConnectionTimeout = 3000,
             };
 
             using (var connection = factory.CreateConnection())

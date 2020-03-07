@@ -1,7 +1,49 @@
-version: '3'
+version: '3.4'
+
+networks: 
+  my-net:
+    driver: bridge
+
 services:
-  web:
-    build: ./DemoMicroservices.ToDoList.CommandApi
-    image: demomicroservices_todolist_commandapi
+  rabbit:
+    image: rabbitmq:3.7.2-management
+    hostname: rabbit
     ports:
-      - "5000:5000"
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - my-net
+
+  demomicroservices.todolist.commandapi:
+    image: ${DOCKER_REGISTRY-}commandapi
+    build:
+      context: .
+      dockerfile: DemoMicroservices.ToDoList.CommandApi/Dockerfile
+    container_name: commandapi
+    depends_on:
+      - rabbit
+    networks:
+      - my-net
+
+  demomicroservices.todolist.auditlogapi:
+    image: ${DOCKER_REGISTRY-}auditlogapi
+    build:
+      context: .
+      dockerfile: DemoMicroservices.ToDoList.AuditLogApi/Dockerfile
+    container_name: auditlogapi
+    depends_on:
+      - rabbit
+    networks:
+      - my-net
+
+  demomicroservices.todolist.searchapi:
+    image: ${DOCKER_REGISTRY-}searchapi
+    build:
+      context: .
+      dockerfile: DemoMicroservices.ToDoList.SearchApi/Dockerfile
+    container_name: searchapi
+    depends_on:
+      - rabbit
+    networks:
+      - my-net
+
