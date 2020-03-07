@@ -18,6 +18,9 @@ docker-compose up -d
 ---------------
 docker-compose down
 
+---------------
+docker network ls
+
 ---------------delete all containers
 docker rm -vf $(docker ps -a -q)
 
