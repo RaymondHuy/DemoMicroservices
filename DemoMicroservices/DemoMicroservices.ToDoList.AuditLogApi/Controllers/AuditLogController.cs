@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace DemoMicroservices.ToDoList.AuditLogApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class AuditLogController : ControllerBase
     {
         private readonly AuditLogDbContext _dbContext;

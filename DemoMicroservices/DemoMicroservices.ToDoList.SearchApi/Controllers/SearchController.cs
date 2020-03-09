@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace DemoMicroservices.ToDoList.SearchApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class SearchController : ControllerBase
     {
         private readonly SearchDbContext _dbContext;
