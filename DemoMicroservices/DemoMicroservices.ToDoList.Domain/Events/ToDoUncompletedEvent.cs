@@ -2,11 +2,14 @@
 {
     public class ToDoUncompletedEvent : Event
     {
-        public int Id { get; set; }
+        public int Id { get; }
 
-        public ToDoUncompletedEvent(int id)
+        public string Name { get; }
+
+        public ToDoUncompletedEvent(int id, string name)
         {
             Id = id;
+            Name = name;
         }
     }
 }

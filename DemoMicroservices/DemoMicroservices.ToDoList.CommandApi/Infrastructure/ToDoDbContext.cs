@@ -11,6 +11,8 @@ namespace DemoMicroservices.ToDoList.CommandApi.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.HasDefaultSchema("Core");
+
             modelBuilder.Entity<ToDo>(e =>
             {
                 e.HasKey(p => p.Id);

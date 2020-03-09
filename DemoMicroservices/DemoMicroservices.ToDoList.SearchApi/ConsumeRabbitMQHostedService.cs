@@ -1,6 +1,6 @@
-﻿using DemoMicroservices.ToDoList.AuditLogApi.Entities;
-using DemoMicroservices.ToDoList.AuditLogApi.Infrastructure;
-using DemoMicroservices.ToDoList.Domain.Events;
+﻿using DemoMicroservices.ToDoList.Domain.Events;
+using DemoMicroservices.ToDoList.SearchApi.Entities;
+using DemoMicroservices.ToDoList.SearchApi.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -8,10 +8,12 @@ using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DemoMicroservices.ToDoList.AuditLogApi
+namespace DemoMicroservices.ToDoList.SearchApi
 {
     public class ConsumeRabbitMQHostedService : BackgroundService
     {
@@ -38,8 +40,8 @@ namespace DemoMicroservices.ToDoList.AuditLogApi
             _channel = _connection.CreateModel();
 
             _channel.ExchangeDeclare("demo.exchange", ExchangeType.Topic);
-            _channel.QueueDeclare("demo.queue.log", false, false, false, null);
-            _channel.QueueBind("demo.queue.log", "demo.exchange", "demo.queue.*", null);
+            _channel.QueueDeclare("demo.queue.search", false, false, false, null);
+            _channel.QueueBind("demo.queue.search", "demo.exchange", "demo.queue.*", null);
             _channel.BasicQos(0, 1, false);
 
             _connection.ConnectionShutdown += RabbitMQ_ConnectionShutdown;
@@ -65,7 +67,7 @@ namespace DemoMicroservices.ToDoList.AuditLogApi
             consumer.Unregistered += OnConsumerUnregistered;
             consumer.ConsumerCancelled += OnConsumerConsumerCancelled;
 
-            _channel.BasicConsume("demo.queue.log", false, consumer);
+            _channel.BasicConsume("demo.queue.search", false, consumer);
             return Task.CompletedTask;
         }
 
@@ -76,7 +78,7 @@ namespace DemoMicroservices.ToDoList.AuditLogApi
 
             using (var scope = _services.CreateScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AuditLogDbContext>();
+                var dbContext = scope.ServiceProvider.GetRequiredService<SearchDbContext>();
 
                 var @event = JsonConvert.DeserializeObject<Event>(content, new JsonSerializerSettings
                 {
@@ -92,34 +94,27 @@ namespace DemoMicroservices.ToDoList.AuditLogApi
         private void OnConsumerRegistered(object sender, ConsumerEventArgs e) { }
         private void OnConsumerShutdown(object sender, ShutdownEventArgs e) { }
         private void RabbitMQ_ConnectionShutdown(object sender, ShutdownEventArgs e) { }
-
-        private void HandleEvent(Event @event, AuditLogDbContext dbContext)
+        
+        private void HandleEvent(Event @event, SearchDbContext dbContext)
         {
             switch (@event)
             {
                 case ToDoCompletedEvent completedEvent:
-                    dbContext.ToDoLogs.Add(new ToDoLog()
-                    {
-                        Description = $"User has completed '{completedEvent.Name}' at {completedEvent.CreatedDate.ToShortDateString()}",
-                        CreatedDate = completedEvent.CreatedDate
-                    });
                     break;
                 case ToDoCreatedEvent createdEvent:
-                    dbContext.ToDoLogs.Add(new ToDoLog()
+                    var keywords = createdEvent.Name.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+
+                    dbContext.Tags.AddRange(keywords.Select(k => new Tag() 
                     {
-                        Description = $"User has created '{createdEvent.Name}' at {createdEvent.CreatedDate.ToShortDateString()}",
-                        CreatedDate = createdEvent.CreatedDate
-                    });
+                        Keyword = k,
+                        Value = createdEvent.Name,
+                        ReferenceId = createdEvent.Id
+                    }));
+
                     break;
                 case ToDoUncompletedEvent uncompletedEvent:
-                    dbContext.ToDoLogs.Add(new ToDoLog()
-                    {
-                        Description = $"User has uncompleted '{uncompletedEvent.Name}' at {uncompletedEvent.CreatedDate.ToShortDateString()}",
-                        CreatedDate = uncompletedEvent.CreatedDate
-                    });
                     break;
             }
-
             dbContext.SaveChanges();
         }
 
