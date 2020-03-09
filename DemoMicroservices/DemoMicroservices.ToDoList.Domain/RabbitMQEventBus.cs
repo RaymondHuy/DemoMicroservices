@@ -23,7 +23,9 @@ namespace DemoMicroservices.ToDoList.Domain
             {
                 channel.ExchangeDeclare("demo.exchange", ExchangeType.Topic);
                 channel.QueueDeclare("demo.queue.log", false, false, false, null);
+                channel.QueueDeclare("demo.queue.search", false, false, false, null);
                 channel.QueueBind("demo.queue.log", "demo.exchange", "demo.queue.*", null);
+                channel.QueueBind("demo.queue.search", "demo.exchange", "demo.queue.*", null);
                 channel.BasicQos(0, 1, false);
 
                 string message = JsonConvert.SerializeObject(@event, new JsonSerializerSettings

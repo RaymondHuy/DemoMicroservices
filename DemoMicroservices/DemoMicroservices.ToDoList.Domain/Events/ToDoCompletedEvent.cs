@@ -4,9 +4,12 @@
     {
         public int Id { get; }
 
-        public ToDoCompletedEvent(int id)
+        public string Name { get; }
+
+        public ToDoCompletedEvent(int id, string name)
         {
             Id = id;
+            Name = name;
         }
     }
 }
