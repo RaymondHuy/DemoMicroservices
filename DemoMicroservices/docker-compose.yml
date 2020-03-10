@@ -1,10 +1,23 @@
 version: '3.4'
 
+volumes:
+    my-db-volume:
+    
 networks: 
   my-net:
     driver: bridge
-
+    
 services:
+  db:
+    image: "mcr.microsoft.com/mssql/server"
+    volumes:
+      - my-db-volume:/var/lib/mssql/data
+    environment:
+        SA_PASSWORD: "Pass@word"
+        ACCEPT_EULA: "Y"
+    ports:
+      - "5434:1433"
+        
   rabbit:
     image: rabbitmq:3.7.2-management
     hostname: rabbit
@@ -20,8 +33,11 @@ services:
       context: .
       dockerfile: DemoMicroservices.ToDoList.CommandApi/Dockerfile
     container_name: commandapi
+    ports:
+      - "32768:80"
     depends_on:
       - rabbit
+      - db
     networks:
       - my-net
 
@@ -31,8 +47,11 @@ services:
       context: .
       dockerfile: DemoMicroservices.ToDoList.AuditLogApi/Dockerfile
     container_name: auditlogapi
+    ports:
+      - "32769:80"
     depends_on:
       - rabbit
+      - db
     networks:
       - my-net
 
@@ -42,8 +61,36 @@ services:
       context: .
       dockerfile: DemoMicroservices.ToDoList.SearchApi/Dockerfile
     container_name: searchapi
+    ports:
+      - "32770:80"
     depends_on:
       - rabbit
+      - db
     networks:
       - my-net
-
+      
+  demomicroservices.apigateway:
+    image: ${DOCKER_REGISTRY-}apigateway
+    build:
+      context: .
+      dockerfile: DemoMicroservices.ApiGateway/Dockerfile
+    container_name: apigateway
+    ports:
+      - "32771:80"
+    depends_on:
+      - demomicroservices.todolist.searchapi
+      - demomicroservices.todolist.auditlogapi
+      - demomicroservices.todolist.commandapi
+    networks:
+      - my-net
+      
+  webapp:
+    container_name: webapp
+    build:
+      context: .
+      dockerfile: DemoMicroservices.ToDoList.UI.node/todo-webapp/Dockerfile
+    volumes:
+      - '.:/app'
+      - '/app/node_modules'
+    ports:
+      - '3001:3000'
