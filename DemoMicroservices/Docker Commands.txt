@@ -24,8 +24,14 @@ docker network ls
 ---------------delete all containers
 docker rm -vf $(docker ps -a -q)
 
+---------------delete all stoped containers
+docker rm $(docker ps -a -q)
+
 ---------------delete all the images
 docker rmi -f $(docker images -a -q)
 
 ---------------create rabbitmq container
 docker run -d -p 15672:15672 -p 5672:5672 --name rabbit-test-for-medium rabbitmq:3-management
+
+---------------log the docker container
+docker logs --details a3a83c56d9d7  
